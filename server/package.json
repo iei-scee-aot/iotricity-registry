@@ -10,12 +10,15 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "check": "tsc --noEmit",
-    "test:health": "tsx src/scripts/test-health.ts"
+    "test:health": "tsx src/scripts/test-health.ts",
+    "test:auth": "tsx src/scripts/test-auth.ts"
   },
   "dependencies": {
+    "better-auth": "^1.6.9",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "mongodb": "^6.20.0",
     "mongoose": "^8.19.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
