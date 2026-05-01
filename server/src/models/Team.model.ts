@@ -29,16 +29,16 @@ export interface ITeam extends Document {
  */
 const teamSchema = new Schema<ITeam>(
   {
-    teamName: { type: String, required: true, unique: true },
+    teamName: { type: String, required: true },
     // Secret key for team-specific actions (e.g., joining)
-    teamSecret: { type: String, required: true },
+    teamSecret: { type: String, required: true, unique: true },
     registrationStatus: {
       type: String,
       enum: ["UNREGISTERED", "REGISTERED", "PAID", "VERIFIED"],
       default: "UNREGISTERED",
     },
     // Reference to the project this team is working on
-    project: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+    project: { type: Schema.Types.ObjectId, ref: "Project", required: false },
     // Reference to the member who created the team
     teamLeader: {
       type: Schema.Types.ObjectId,
