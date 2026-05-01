@@ -6,14 +6,13 @@ import { env } from "./config/env.js";
 import { healthRouter } from "./routes/health.routes.js";
 import { teamMemberRouter } from "./routes/team-members.routes.js";
 import { teamsRouter } from "./routes/teams.routes.js";
-import { projectsRouter } from "./routes/projects.routes.js";
 import { swaggerSpec } from "./swagger.js";
 
 type BetterAuthHandler = Parameters<typeof toNodeHandler>[0];
 
 /**
  * Creates and configures the Express application.
- * 
+ *
  * @param auth - The Better Auth handler instance to be integrated into the app.
  * @returns The configured Express application instance.
  */
@@ -37,7 +36,7 @@ export const createApp = (auth: BetterAuthHandler) => {
    * Maps all requests under /api/auth/* to the Better Auth node handler.
    */
   app.all("/api/auth/*splat", toNodeHandler(auth));
-  
+
   // Body parsing middleware to handle JSON payloads
   app.use(express.json());
 
@@ -53,7 +52,6 @@ export const createApp = (auth: BetterAuthHandler) => {
       auth: "/api/auth/ok",
       teamMembers: "/api/team-members",
       teams: "/api/teams",
-      projects: "/api/projects",
     });
   });
 
@@ -61,8 +59,7 @@ export const createApp = (auth: BetterAuthHandler) => {
   app.use("/api/health", healthRouter);
   app.use("/api/team-members", teamMemberRouter);
   app.use("/api/teams", teamsRouter);
-  app.use("/api/projects", projectsRouter);
-  
+
   // Swagger UI registration for API documentation
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { IProject } from "./Project.model.js";
 import { ITeamMember } from "./TeamMember.model.js";
 
 /**
@@ -18,7 +17,6 @@ export interface ITeam extends Document {
   teamName: string;
   teamSecret: string;
   registrationStatus: RegistrationStatus;
-  project: IProject["_id"] | IProject;
   teamLeader: ITeamMember["_id"] | ITeamMember;
   teamMembers: (ITeamMember["_id"] | ITeamMember)[];
 }
@@ -37,8 +35,6 @@ const teamSchema = new Schema<ITeam>(
       enum: ["UNREGISTERED", "REGISTERED", "PAID", "VERIFIED"],
       default: "UNREGISTERED",
     },
-    // Reference to the project this team is working on
-    project: { type: Schema.Types.ObjectId, ref: "Project", required: false },
     // Reference to the member who created the team
     teamLeader: {
       type: Schema.Types.ObjectId,
@@ -56,8 +52,8 @@ const teamSchema = new Schema<ITeam>(
  * Note: teamLeader is handled separately from teamMembers array in this schema.
  */
 teamSchema.path("teamMembers").validate(function (members: unknown[]) {
-  return members.length >= 0 && members.length <= 3; // Adjusted to allow 0 if only leader is present
-}, "A team must have between 0 and 3 additional members.");
+  return members.length >= 1 && members.length <= 4; // Adjusted to allow 1 if only leader is present
+}, "A team must have between 1 and 4 additional members.");
 
 // Create and export the Team model
 export const Team = mongoose.model<ITeam>("Team", teamSchema);
