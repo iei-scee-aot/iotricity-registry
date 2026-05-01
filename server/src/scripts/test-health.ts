@@ -1,12 +1,17 @@
 import mongoose from "mongoose";
 import request from "supertest";
 import { createApp } from "../app.js";
+import {
+  closeAuthDatabase,
+  connectToAuthDatabase,
+} from "../config/auth-db.js";
 import { connectToDatabase } from "../config/db.js";
 import { env } from "../config/env.js";
 import { initAuth } from "../lib/auth.js";
 
 const run = async (): Promise<void> => {
   await connectToDatabase(env.mongoUri);
+  await connectToAuthDatabase(env.mongoUri);
   const app = createApp(initAuth());
 
   try {
@@ -52,6 +57,8 @@ const run = async (): Promise<void> => {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
     }
+
+    await closeAuthDatabase();
   }
 };
 
