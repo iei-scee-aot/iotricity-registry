@@ -82,13 +82,13 @@ export const createApp = (authHandler: BetterAuthHandler) => {
    */
   app.use(
     "/api-docs",
-    (req: Request, res: Response, next: NextFunction) => {
-      if (req.path === "" || req.path === "/") {
-        res.redirect(301, "/api-docs/");
-      } else {
-        next();
-      }
-    },
+    // (req: Request, res: Response, next: NextFunction) => {
+    //   if (req.path === "" || req.path === "/") {
+    //     res.redirect(301, "/api-docs/");
+    //   } else {
+    //     next();
+    //   }
+    // },
     swaggerUi.serve,
     swaggerUi.setup(swaggerSpec),
   );
