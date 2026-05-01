@@ -1,8 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-/**
- * Interface representing a Team Member document in MongoDB.
- */
+// Interface representing a Team Member document in MongoDB.
 export interface ITeamMember extends Document {
   name: string;
   googleEmail: string;

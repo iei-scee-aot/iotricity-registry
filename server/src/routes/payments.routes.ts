@@ -67,5 +67,3 @@ paymentRouter.post("/checkout", createCheckoutSession);
  *         description: Server error
  */
 paymentRouter.post("/verify", verifyPayment);
-
-export default paymentRouter;

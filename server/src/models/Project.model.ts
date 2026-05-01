@@ -1,11 +1,9 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-export type ProjectStatus = "DRAFT" | "SUBMITTED" | "VERIFIED";
+type ProjectStatus = "DRAFT" | "SUBMITTED" | "VERIFIED";
 
-/**
- * Interface representing a Project document in MongoDB.
- */
-export interface IProject extends Document {
+// Interface representing a Project document in MongoDB.
+interface IProject extends Document {
   projectName: string;
   projectThemes: string[];
   projectTracks: string[];

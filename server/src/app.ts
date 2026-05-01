@@ -1,5 +1,5 @@
 import cors from "cors";
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import { toNodeHandler } from "better-auth/node";
 import swaggerUi from "swagger-ui-express";
 import { env } from "./config/env.js";
@@ -13,10 +13,7 @@ import { connectToDatabase } from "./config/db.js";
 import { connectToAuthDatabase } from "./config/auth-db.js";
 import { initAuth } from "./lib/auth.js";
 
-/**
- * Initialize database connections and authentication.
- * Using top-level await (supported in Node.js 14.8+ and Vercel).
- */
+// Initialize database connections and authentication.
 await connectToDatabase(env.mongoUri);
 await connectToAuthDatabase(env.mongoUri);
 const auth = initAuth();
@@ -24,38 +21,17 @@ const auth = initAuth();
 type BetterAuthHandler = Parameters<typeof toNodeHandler>[0];
 
 /**
- * Creates and configures the Express application.
+ * Registers all API routes and documentation endpoints.
  *
- * @param authHandler - The Better Auth handler instance.
- * @returns The configured Express application instance.
+ * @param app - The Express application instance.
+ * @param authHandler - The Better Auth handler.
  */
-export const createApp = (authHandler: BetterAuthHandler) => {
-  const app = express();
-
-  /**
-   * CORS configuration:
-   * Enables cross-origin requests from the configured client origin.
-   */
-  app.use(
-    cors({
-      origin: env.clientOrigin,
-      credentials: true,
-    }),
-  );
-
-  /**
-   * Better Auth route handling:
-   * Maps all requests under /api/auth/* to the Better Auth node handler.
-   */
+const registerRoutes = (
+  app: express.Application,
+  authHandler: BetterAuthHandler,
+) => {
   app.all("/api/auth/*splat", toNodeHandler(authHandler));
 
-  // Body parsing middleware to handle JSON payloads
-  app.use(express.json());
-
-  /**
-   * Root endpoint:
-   * Provides basic information about the API and links to documentation.
-   */
   app.get("/", (_req, res) => {
     res.json({
       message: "Welcome to the Event Registration API.",
@@ -75,23 +51,29 @@ export const createApp = (authHandler: BetterAuthHandler) => {
   app.use("/api/projects", projectsRouter);
   app.use("/api/payments", paymentRouter);
 
-  /**
-   * Swagger UI registration for API documentation.
-   * Redirect ensures that /api-docs always has a trailing slash,
-   * which is required for Swagger UI to resolve its relative assets correctly.
-   */
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+};
+
+/**
+ * Creates and configures the Express application.
+ *
+ * @param authHandler - The Better Auth handler instance.
+ * @returns The configured Express application instance.
+ */
+export const createApp = (authHandler: BetterAuthHandler) => {
+  const app = express();
+
   app.use(
-    "/api-docs",
-    // (req: Request, res: Response, next: NextFunction) => {
-    //   if (req.path === "" || req.path === "/") {
-    //     res.redirect(301, "/api-docs/");
-    //   } else {
-    //     next();
-    //   }
-    // },
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec),
+    cors({
+      origin: env.clientOrigin,
+      credentials: true,
+    }),
   );
+
+  app.use(express.json());
+
+  // Register all routes
+  registerRoutes(app, authHandler);
 
   return app;
 };
@@ -99,8 +81,5 @@ export const createApp = (authHandler: BetterAuthHandler) => {
 // Create the app instance
 const app = createApp(auth);
 
-/**
- * Export the app instance as the default export.
- * Vercel's zero-config Express support detects this and handles routing automatically.
- */
+// Export the app instance as the default export.
 export default app;

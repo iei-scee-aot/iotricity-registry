@@ -67,16 +67,10 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       amount: order.amount,
       currency: order.currency,
       keyId: env.razorpayKeyId,
-      // Hint for the frontend to only allow UPI
       method: "upi",
       config: {
         display: {
-          blocks: {
-            upi: {
-              name: "UPI",
-              instruments: [{ method: "upi" }],
-            },
-          },
+          blocks: { upi: { name: "UPI", instruments: [{ method: "upi" }] } },
           sequence: ["block.upi"],
           preferences: { show_default_blocks: false },
         },
@@ -95,42 +89,35 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
  */
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res
-        .status(400)
-        .json({ message: "Missing payment verification details." });
+      return res.status(400).json({ message: "Missing payment verification details." });
     }
-
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
       .createHmac("sha256", env.razorpayKeySecret)
-      .update(body.toString())
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    if (expectedSignature === razorpay_signature) {
-      const team = await Team.findOne({ razorpayOrderId: razorpay_order_id });
-      if (!team) {
-        return res
-          .status(404)
-          .json({ message: "Team not found for this order ID." });
-      }
-
-      team.registrationStatus = "PAID";
-      await team.save();
-
-      res.json({
-        message: "Payment verified successfully.",
-        registrationStatus: team.registrationStatus,
-      });
-    } else {
-      res
-        .status(400)
-        .json({ message: "Invalid payment signature verification failed." });
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Invalid payment signature verification failed." });
     }
+
+    const updatedTeam = await Team.findOneAndUpdate(
+      { razorpayOrderId: razorpay_order_id },
+      { registrationStatus: "PAID" },
+      { new: true },
+    );
+
+    if (!updatedTeam) {
+      return res.status(404).json({ message: "Team not found for this order ID." });
+    }
+
+    res.json({
+      message: "Payment verified successfully.",
+      registrationStatus: updatedTeam.registrationStatus,
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

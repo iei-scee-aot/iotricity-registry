@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Team, TeamMember } from "../models/index.js";
 import { generateUniqueTeamSecret } from "../helpers/createTeamSecret.js";
+import { verifyTeamAndLeader } from "../helpers/controller.helpers.js";
 
 /**
  * Creates a new team.
@@ -113,17 +114,19 @@ export const updateTeamName = async (req: Request, res: Response) => {
         .json({ message: "Team leader email is required for validation." });
     }
 
-    const team = await Team.findOne({ teamSecret: team_secret });
-    if (!team) {
-      return res.status(404).json({ message: "Team not found." });
-    }
+    // Verify team and leadership
+    const verification = await verifyTeamAndLeader(
+      team_secret as string,
+      teamLeaderEmail,
+      res,
+      {
+        forbiddenErrorMessage:
+          "Forbidden: Only the team leader can update the team name.",
+      },
+    );
 
-    const leader = await TeamMember.findOne({ googleEmail: teamLeaderEmail });
-    if (!leader || team.teamLeader.toString() !== leader._id.toString()) {
-      return res.status(403).json({
-        message: "Forbidden: Only the team leader can update the team name.",
-      });
-    }
+    if (!verification) return;
+    const { team } = verification;
 
     if (team.teamName === newTeamName) {
       return res.status(400).json({
@@ -317,24 +320,26 @@ export const deleteTeam = async (req: Request, res: Response) => {
     const { teamLeaderEmail } = req.body;
 
     if (!teamLeaderEmail) {
-      return res.status(400).json({ message: "Team leader email is required for validation." });
+      return res
+        .status(400)
+        .json({ message: "Team leader email is required for validation." });
     }
 
-    const team = await Team.findOne({ teamSecret: team_secret });
-    if (!team) {
-      return res.status(404).json({ message: "Team not found." });
-    }
+    // Verify team, status, and leadership
+    const verification = await verifyTeamAndLeader(
+      team_secret as string,
+      teamLeaderEmail,
+      res,
+      {
+        requiredStatus: "UNREGISTERED",
+        statusErrorMessage: "Only UNREGISTERED teams can be deleted.",
+        forbiddenErrorMessage:
+          "Forbidden: Only the team leader can delete the team.",
+      },
+    );
 
-    // Check if the team is in UNREGISTERED status
-    if (team.registrationStatus !== "UNREGISTERED") {
-      return res.status(400).json({ message: "Only UNREGISTERED teams can be deleted." });
-    }
-
-    // Verify the leader
-    const leader = await TeamMember.findOne({ googleEmail: teamLeaderEmail });
-    if (!leader || team.teamLeader.toString() !== leader._id.toString()) {
-      return res.status(403).json({ message: "Forbidden: Only the team leader can delete the team." });
-    }
+    if (!verification) return;
+    const { team } = verification;
 
     await Team.findByIdAndDelete(team._id);
 

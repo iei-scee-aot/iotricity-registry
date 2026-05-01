@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { Project, Team, TeamMember } from "../models/index.js";
+import { Project, Team } from "../models/index.js";
+import { verifyTeamAndLeader } from "../helpers/controller.helpers.js";
 
 /**
  * Creates a new project.
@@ -19,21 +20,17 @@ export const createProject = async (req: Request, res: Response) => {
     }
 
     if (team.registrationStatus !== "VERIFIED") {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: Only VERIFIED teams can submit projects.",
-        });
+      return res.status(403).json({
+        message: "Forbidden: Only VERIFIED teams can submit projects.",
+      });
     }
 
     // 2. Check if the team has already submitted a project for this round
     const existingProject = await Project.findOne({ teamSecret, round });
     if (existingProject) {
-      return res
-        .status(400)
-        .json({
-          message: `A project for Round ${round} has already been submitted by this team.`,
-        });
+      return res.status(400).json({
+        message: `A project for Round ${round} has already been submitted by this team.`,
+      });
     }
 
     const project = new Project(req.body);
@@ -77,11 +74,9 @@ export const getProjectByTeamSecretAndRound = async (
     });
 
     if (!project) {
-      return res
-        .status(404)
-        .json({
-          message: `Project for Round ${round} not found for this team.`,
-        });
+      return res.status(404).json({
+        message: `Project for Round ${round} not found for this team.`,
+      });
     }
     res.json(project);
   } catch (error: any) {
@@ -110,29 +105,19 @@ export const updateProjectByTeamSecretAndRound = async (
         .json({ message: "Team leader email is required for validation." });
     }
 
-    // 1. Check if the team exists and is VERIFIED
-    const team = await Team.findOne({ teamSecret: team_secret });
-    if (!team) {
-      return res.status(404).json({ message: "Team not found." });
-    }
+    // Verify team status and leadership
+    const verification = await verifyTeamAndLeader(
+      team_secret as string,
+      teamLeaderEmail,
+      res,
+      {
+        requiredStatus: "VERIFIED",
+        statusErrorMessage: "Forbidden: Only VERIFIED teams can update projects.",
+        forbiddenErrorMessage: "Forbidden: Only the team leader can update the project.",
+      },
+    );
 
-    if (team.registrationStatus !== "VERIFIED") {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: Only VERIFIED teams can update projects.",
-        });
-    }
-
-    // 2. Verify leadership (Rightful owner check)
-    const leader = await TeamMember.findOne({ googleEmail: teamLeaderEmail });
-    if (!leader || team.teamLeader.toString() !== leader._id.toString()) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: Only the team leader can update the project.",
-        });
-    }
+    if (!verification) return;
 
     // 3. Find and update the project
     const updatedProject = await Project.findOneAndUpdate(
@@ -142,11 +127,9 @@ export const updateProjectByTeamSecretAndRound = async (
     );
 
     if (!updatedProject) {
-      return res
-        .status(404)
-        .json({
-          message: `Project for Round ${round} not found for this team.`,
-        });
+      return res.status(404).json({
+        message: `Project for Round ${round} not found for this team.`,
+      });
     }
 
     res.json(updatedProject);
@@ -176,29 +159,19 @@ export const deleteProjectByTeamSecretAndRound = async (
         .json({ message: "Team leader email is required for validation." });
     }
 
-    // 1. Check if the team exists and is VERIFIED
-    const team = await Team.findOne({ teamSecret: team_secret });
-    if (!team) {
-      return res.status(404).json({ message: "Team not found." });
-    }
+    // Verify team status and leadership
+    const verification = await verifyTeamAndLeader(
+      team_secret as string,
+      teamLeaderEmail,
+      res,
+      {
+        requiredStatus: "VERIFIED",
+        statusErrorMessage: "Forbidden: Only VERIFIED teams can delete projects.",
+        forbiddenErrorMessage: "Forbidden: Only the team leader can delete the project.",
+      },
+    );
 
-    if (team.registrationStatus !== "VERIFIED") {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: Only VERIFIED teams can delete projects.",
-        });
-    }
-
-    // 2. Verify leadership
-    const leader = await TeamMember.findOne({ googleEmail: teamLeaderEmail });
-    if (!leader || team.teamLeader.toString() !== leader._id.toString()) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: Only the team leader can delete the project.",
-        });
-    }
+    if (!verification) return;
 
     const deletedProject = await Project.findOneAndDelete({
       teamSecret: team_secret,
@@ -206,11 +179,9 @@ export const deleteProjectByTeamSecretAndRound = async (
     });
 
     if (!deletedProject) {
-      return res
-        .status(404)
-        .json({
-          message: `Project for Round ${round} not found for this team.`,
-        });
+      return res.status(404).json({
+        message: `Project for Round ${round} not found for this team.`,
+      });
     }
 
     res.json({ message: "Project deleted successfully." });

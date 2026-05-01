@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { TeamMember } from "../models/index.js";
+import { checkMemberCollisions } from "../helpers/controller.helpers.js";
 
 /**
  * Creates a new team member after validating for duplicate emails and roll number.
@@ -12,24 +13,14 @@ export const createTeamMember = async (req: Request, res: Response) => {
     const { googleEmail, collegeEmail, rollNumber } = req.body;
 
     // Check if a member with any of the unique identifiers already exists
-    const existingMember = await TeamMember.findOne({
-      $or: [
-        { googleEmail },
-        { collegeEmail },
-        { rollNumber },
-      ],
+    const collisionError = await checkMemberCollisions({
+      googleEmail,
+      collegeEmail,
+      rollNumber,
     });
 
-    if (existingMember) {
-      if (existingMember.googleEmail === googleEmail) {
-        return res.status(409).json({ message: "Google email is already in use." });
-      }
-      if (existingMember.collegeEmail === collegeEmail) {
-        return res.status(409).json({ message: "College email is already in use." });
-      }
-      if (existingMember.rollNumber === rollNumber) {
-        return res.status(409).json({ message: "Roll number is already in use." });
-      }
+    if (collisionError) {
+      return res.status(409).json({ message: collisionError });
     }
 
     const teamMember = new TeamMember(req.body);
@@ -96,36 +87,14 @@ export const updateTeamMemberByEmail = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Team member not found" });
     }
 
-    // 2. Build list of unique fields being changed to check for collisions with OTHER members
-    const orConditions = [];
-    if (googleEmail && googleEmail !== teamMemberToUpdate.googleEmail) {
-      orConditions.push({ googleEmail });
-    }
-    if (collegeEmail && collegeEmail !== teamMemberToUpdate.collegeEmail) {
-      orConditions.push({ collegeEmail });
-    }
-    if (rollNumber && rollNumber !== teamMemberToUpdate.rollNumber) {
-      orConditions.push({ rollNumber });
-    }
+    // 2. Check for collisions with OTHER members if unique fields are changing
+    const collisionError = await checkMemberCollisions(
+      { googleEmail, collegeEmail, rollNumber },
+      teamMemberToUpdate._id,
+    );
 
-    // If any unique fields are changing, verify they aren't taken by someone else
-    if (orConditions.length > 0) {
-      const existingMember = await TeamMember.findOne({
-        _id: { $ne: teamMemberToUpdate._id },
-        $or: orConditions,
-      });
-
-      if (existingMember) {
-        if (googleEmail && existingMember.googleEmail === googleEmail) {
-          return res.status(409).json({ message: "Google email is already in use by another member." });
-        }
-        if (collegeEmail && existingMember.collegeEmail === collegeEmail) {
-          return res.status(409).json({ message: "College email is already in use by another member." });
-        }
-        if (rollNumber && existingMember.rollNumber === rollNumber) {
-          return res.status(409).json({ message: "Roll number is already in use by another member." });
-        }
-      }
+    if (collisionError) {
+      return res.status(409).json({ message: collisionError });
     }
 
     // 3. Perform the update with validation enabled

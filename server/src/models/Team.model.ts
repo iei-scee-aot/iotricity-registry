@@ -1,19 +1,11 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { ITeamMember } from "./TeamMember.model.js";
 
-/**
- * Valid registration statuses for a team.
- */
-export type RegistrationStatus =
-  | "UNREGISTERED"
-  | "REGISTERED"
-  | "PAID"
-  | "VERIFIED";
+// Valid registration statuses for a team.
+type RegistrationStatus = "UNREGISTERED" | "REGISTERED" | "PAID" | "VERIFIED";
 
-/**
- * Interface representing a Team document in MongoDB.
- */
-export interface ITeam extends Document {
+// Interface representing a Team document in MongoDB.
+interface ITeam extends Document {
   teamName: string;
   teamSecret: string;
   registrationStatus: RegistrationStatus;
