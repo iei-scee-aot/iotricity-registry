@@ -1,5 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+export type ProjectStatus = "DRAFT" | "SUBMITTED" | "VERIFIED";
+
 /**
  * Interface representing a Project document in MongoDB.
  */
@@ -7,9 +9,12 @@ export interface IProject extends Document {
   projectName: string;
   projectThemes: string[];
   projectTracks: string[];
+  teamSecret: string;
+  round: number;
   githubUrl: string;
   presentationUrl: string;
   demoVideoUrl: string;
+  status: ProjectStatus;
 }
 
 /**
@@ -21,9 +26,17 @@ const projectSchema = new Schema<IProject>(
     projectName: { type: String, required: true },
     projectThemes: [{ type: String, required: true }],
     projectTracks: [{ type: String, required: true }],
+    teamSecret: { type: String, required: true },
+    round: { type: Number, required: true },
     githubUrl: { type: String, required: true },
     presentationUrl: { type: String, required: true },
     demoVideoUrl: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["DRAFT", "SUBMITTED", "VERIFIED"],
+      default: "DRAFT",
+      required: true,
+    },
   },
   { timestamps: true },
 );

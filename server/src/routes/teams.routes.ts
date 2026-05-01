@@ -7,6 +7,7 @@ import {
   updateTeamRegistrationStatus,
   addTeamTeamMembers,
   deleteTeamTeamMembers,
+  deleteTeam,
 } from "../controllers/teams.controller.js";
 
 export const teamsRouter = Router();
@@ -202,6 +203,44 @@ teamsRouter.patch("/:team_secret/name", updateTeamName);
  *         description: Team not found
  */
 teamsRouter.patch("/:team_secret/status", updateTeamRegistrationStatus);
+
+/**
+ * @openapi
+ * /api/teams/{team_secret}:
+ *   delete:
+ *     tags:
+ *       - Teams
+ *     summary: Delete a team (only if UNREGISTERED)
+ *     parameters:
+ *       - in: path
+ *         name: team_secret
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - teamLeaderEmail
+ *             properties:
+ *               teamLeaderEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: Email of the team leader
+ *     responses:
+ *       200:
+ *         description: Team deleted successfully
+ *       400:
+ *         description: Team is not UNREGISTERED
+ *       403:
+ *         description: Forbidden (Only leader can delete)
+ *       404:
+ *         description: Team or leader not found
+ */
+teamsRouter.delete("/:team_secret", deleteTeam);
 
 /**
  * @openapi

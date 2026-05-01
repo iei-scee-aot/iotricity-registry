@@ -303,3 +303,43 @@ export const deleteTeamTeamMembers = async (req: Request, res: Response) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+/**
+ * Deletes a team.
+ * Verifies that the requester is the team leader and the team is UNREGISTERED.
+ * 
+ * @param req - Express Request object containing team_secret in params and teamLeaderEmail in body.
+ * @param res - Express Response object.
+ */
+export const deleteTeam = async (req: Request, res: Response) => {
+  try {
+    const { team_secret } = req.params;
+    const { teamLeaderEmail } = req.body;
+
+    if (!teamLeaderEmail) {
+      return res.status(400).json({ message: "Team leader email is required for validation." });
+    }
+
+    const team = await Team.findOne({ teamSecret: team_secret });
+    if (!team) {
+      return res.status(404).json({ message: "Team not found." });
+    }
+
+    // Check if the team is in UNREGISTERED status
+    if (team.registrationStatus !== "UNREGISTERED") {
+      return res.status(400).json({ message: "Only UNREGISTERED teams can be deleted." });
+    }
+
+    // Verify the leader
+    const leader = await TeamMember.findOne({ googleEmail: teamLeaderEmail });
+    if (!leader || team.teamLeader.toString() !== leader._id.toString()) {
+      return res.status(403).json({ message: "Forbidden: Only the team leader can delete the team." });
+    }
+
+    await Team.findByIdAndDelete(team._id);
+
+    res.json({ message: "Team deleted successfully." });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
