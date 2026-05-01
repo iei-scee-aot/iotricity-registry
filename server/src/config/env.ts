@@ -5,7 +5,7 @@ dotenv.config();
 
 /**
  * Retrieves a required environment variable and trims whitespace.
- * 
+ *
  * @param name - The name of the environment variable to retrieve.
  * @returns The value of the environment variable.
  * @throws Error if the variable is missing or empty.
@@ -35,4 +35,6 @@ export const env = {
   clientOrigin: getRequiredEnv("CLIENT_ORIGIN"),
   googleClientId: getRequiredEnv("GOOGLE_CLIENT_ID"),
   googleClientSecret: getRequiredEnv("GOOGLE_CLIENT_SECRET"),
+  razorpayKeyId: getRequiredEnv("RAZORPAY_KEY_ID"),
+  razorpayKeySecret: getRequiredEnv("RAZORPAY_KEY_SECRET"),
 };

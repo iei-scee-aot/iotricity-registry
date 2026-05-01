@@ -19,6 +19,7 @@ export interface ITeam extends Document {
   registrationStatus: RegistrationStatus;
   teamLeader: ITeamMember["_id"] | ITeamMember;
   teamMembers: (ITeamMember["_id"] | ITeamMember)[];
+  razorpayOrderId?: string;
 }
 
 /**
@@ -43,6 +44,7 @@ const teamSchema = new Schema<ITeam>(
     },
     // List of additional members in the team
     teamMembers: [{ type: Schema.Types.ObjectId, ref: "TeamMember" }],
+    razorpayOrderId: { type: String },
   },
   { timestamps: true },
 );

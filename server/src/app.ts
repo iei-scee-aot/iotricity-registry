@@ -7,6 +7,7 @@ import { healthRouter } from "./routes/health.routes.js";
 import { teamMemberRouter } from "./routes/team-members.routes.js";
 import { teamsRouter } from "./routes/teams.routes.js";
 import { projectsRouter } from "./routes/projects.routes.js";
+import { paymentRouter } from "./routes/payments.routes.js";
 import { swaggerSpec } from "./swagger.js";
 
 type BetterAuthHandler = Parameters<typeof toNodeHandler>[0];
@@ -62,6 +63,7 @@ export const createApp = (auth: BetterAuthHandler) => {
   app.use("/api/team-members", teamMemberRouter);
   app.use("/api/teams", teamsRouter);
   app.use("/api/projects", projectsRouter);
+  app.use("/api/payments", paymentRouter);
 
   // Swagger UI registration for API documentation
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
