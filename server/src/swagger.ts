@@ -1,5 +1,9 @@
 import swaggerJSDoc from "swagger-jsdoc";
 
+/**
+ * Swagger/OpenAPI specification configuration.
+ * Automatically generates API documentation by scanning route files for JSDoc comments.
+ */
 export const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: "3.0.0",
@@ -19,7 +23,12 @@ export const swaggerSpec = swaggerJSDoc({
         name: "Health",
         description: "Application health monitoring",
       },
+      {
+        name: "Team Members",
+        description: "Management of team member profiles and registrations",
+      },
     ],
   },
+  // Path to the API docs (route files containing @openapi comments)
   apis: ["./src/routes/*.ts"],
 });

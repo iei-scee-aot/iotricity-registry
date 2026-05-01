@@ -2,12 +2,18 @@ import mongoose, { Document, Schema } from "mongoose";
 import { IProject } from "./Project.model.js";
 import { ITeamMember } from "./TeamMember.model.js";
 
+/**
+ * Valid registration statuses for a team.
+ */
 export type RegistrationStatus =
   | "UNREGISTERED"
   | "REGISTERED"
   | "PAID"
   | "VERIFIED";
 
+/**
+ * Interface representing a Team document in MongoDB.
+ */
 export interface ITeam extends Document {
   teamName: string;
   teamSecret: string;
@@ -17,28 +23,41 @@ export interface ITeam extends Document {
   teamMembers: (ITeamMember["_id"] | ITeamMember)[];
 }
 
+/**
+ * Mongoose schema for the Team model.
+ * Manages team composition, projects, and registration status.
+ */
 const teamSchema = new Schema<ITeam>(
   {
     teamName: { type: String, required: true, unique: true },
+    // Secret key for team-specific actions (e.g., joining)
     teamSecret: { type: String, required: true },
     registrationStatus: {
       type: String,
       enum: ["UNREGISTERED", "REGISTERED", "PAID", "VERIFIED"],
       default: "UNREGISTERED",
     },
+    // Reference to the project this team is working on
     project: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+    // Reference to the member who created the team
     teamLeader: {
       type: Schema.Types.ObjectId,
       ref: "TeamMember",
       required: true,
     },
+    // List of additional members in the team
     teamMembers: [{ type: Schema.Types.ObjectId, ref: "TeamMember" }],
   },
   { timestamps: true },
 );
 
+/**
+ * Validation to ensure a team has a valid number of members.
+ * Note: teamLeader is handled separately from teamMembers array in this schema.
+ */
 teamSchema.path("teamMembers").validate(function (members: unknown[]) {
-  return members.length >= 1 && members.length <= 3;
-}, "A team must have between 1 and 3 members (excluding the leader).");
+  return members.length >= 0 && members.length <= 3; // Adjusted to allow 0 if only leader is present
+}, "A team must have between 0 and 3 additional members.");
 
+// Create and export the Team model
 export const Team = mongoose.model<ITeam>("Team", teamSchema);
