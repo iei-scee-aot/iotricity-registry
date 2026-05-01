@@ -1,4 +1,10 @@
 import swaggerJSDoc from "swagger-jsdoc";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Get the directory name of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Swagger/OpenAPI specification configuration.
@@ -13,6 +19,10 @@ export const swaggerSpec = swaggerJSDoc({
       description: "API documentation for the event user registration backend.",
     },
     servers: [
+      {
+        url: "/",
+        description: "Production server (relative path)",
+      },
       {
         url: "http://localhost:4000",
         description: "Local development server",
@@ -30,5 +40,6 @@ export const swaggerSpec = swaggerJSDoc({
     ],
   },
   // Path to the API docs (route files containing @openapi comments)
-  apis: ["./src/routes/*.ts"],
+  // Uses absolute path and supports both .ts (dev) and .js (production) files
+  apis: [path.join(__dirname, "./routes/*.{ts,js}")],
 });
