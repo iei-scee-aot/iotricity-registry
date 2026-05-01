@@ -52,8 +52,8 @@ const teamSchema = new Schema<ITeam>(
  * Note: teamLeader is handled separately from teamMembers array in this schema.
  */
 teamSchema.path("teamMembers").validate(function (members: unknown[]) {
-  return members.length >= 1 && members.length <= 4; // Adjusted to allow 1 if only leader is present
-}, "A team must have between 1 and 4 additional members.");
+  return members.length >= 0 && members.length <= 4; // Adjusted to allow 0 if only leader is present
+}, "A team must have between 0 and 4 additional members.");
 
 // Create and export the Team model
 export const Team = mongoose.model<ITeam>("Team", teamSchema);

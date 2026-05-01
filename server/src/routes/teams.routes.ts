@@ -3,7 +3,10 @@ import {
   createTeam,
   getAllTeams,
   getTeamBySecret,
-  updateTeamBySecret,
+  updateTeamName,
+  updateTeamRegistrationStatus,
+  addTeamTeamMembers,
+  deleteTeamTeamMembers,
 } from "../controllers/teams.controller.js";
 
 export const teamsRouter = Router();
@@ -12,14 +15,23 @@ export const teamsRouter = Router();
  * @openapi
  * components:
  *   schemas:
- *     Team:
+ *     TeamCreateRequest:
  *       type: object
  *       required:
  *         - teamName
- *         - teamSecret
- *         - project
- *         - teamLeader
+ *         - teamLeaderEmail
  *       properties:
+ *         teamName:
+ *           type: string
+ *         teamLeaderEmail:
+ *           type: string
+ *           format: email
+ *           description: Google Email of the team leader
+ *     TeamPopulated:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
  *         teamName:
  *           type: string
  *         teamSecret:
@@ -27,18 +39,18 @@ export const teamsRouter = Router();
  *         registrationStatus:
  *           type: string
  *           enum: [UNREGISTERED, REGISTERED, PAID, VERIFIED]
- *           default: UNREGISTERED
- *         project:
- *           type: string
- *           description: ID of the project
  *         teamLeader:
- *           type: string
- *           description: ID of the team leader
+ *           $ref: '#/components/schemas/TeamMember'
  *         teamMembers:
  *           type: array
  *           items:
- *             type: string
- *           description: IDs of team members
+ *             $ref: '#/components/schemas/TeamMember'
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
  */
 
 /**
@@ -53,14 +65,16 @@ export const teamsRouter = Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Team'
+ *             $ref: '#/components/schemas/TeamCreateRequest'
  *     responses:
  *       201:
- *         description: Team created
+ *         description: Team created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamPopulated'
  *       400:
  *         description: Invalid input
- *       409:
- *         description: Team name already taken
  */
 teamsRouter.post("/", createTeam);
 
@@ -73,13 +87,13 @@ teamsRouter.post("/", createTeam);
  *     summary: Get all teams
  *     responses:
  *       200:
- *         description: List of teams
+ *         description: List of teams retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Team'
+ *                 $ref: '#/components/schemas/TeamPopulated'
  */
 teamsRouter.get("/", getAllTeams);
 
@@ -98,7 +112,11 @@ teamsRouter.get("/", getAllTeams);
  *           type: string
  *     responses:
  *       200:
- *         description: Team found
+ *         description: Team found and returned with full details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamPopulated'
  *       404:
  *         description: Team not found
  */
@@ -106,11 +124,11 @@ teamsRouter.get("/:team_secret", getTeamBySecret);
 
 /**
  * @openapi
- * /api/teams/{team_secret}:
+ * /api/teams/{team_secret}/name:
  *   patch:
  *     tags:
  *       - Teams
- *     summary: Update a team by its secret
+ *     summary: Update team name
  *     parameters:
  *       - in: path
  *         name: team_secret
@@ -122,15 +140,141 @@ teamsRouter.get("/:team_secret", getTeamBySecret);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Team'
+ *             type: object
+ *             required:
+ *               - newTeamName
+ *               - teamLeaderEmail
+ *             properties:
+ *               newTeamName:
+ *                 type: string
+ *               teamLeaderEmail:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
- *         description: Team updated
+ *         description: Team name updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamPopulated'
  *       400:
  *         description: Invalid input
+ *       403:
+ *         description: Forbidden (Only leader can update)
  *       404:
  *         description: Team not found
- *       409:
- *         description: Team name collision
  */
-teamsRouter.patch("/:team_secret", updateTeamBySecret);
+teamsRouter.patch("/:team_secret/name", updateTeamName);
+
+/**
+ * @openapi
+ * /api/teams/{team_secret}/status:
+ *   patch:
+ *     tags:
+ *       - Teams
+ *     summary: Update team registration status
+ *     parameters:
+ *       - in: path
+ *         name: team_secret
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - registrationStatus
+ *             properties:
+ *               registrationStatus:
+ *                 type: string
+ *                 enum: [UNREGISTERED, REGISTERED, PAID, VERIFIED]
+ *     responses:
+ *       200:
+ *         description: Status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamPopulated'
+ *       404:
+ *         description: Team not found
+ */
+teamsRouter.patch("/:team_secret/status", updateTeamRegistrationStatus);
+
+/**
+ * @openapi
+ * /api/teams/{team_secret}/members:
+ *   post:
+ *     tags:
+ *       - Teams
+ *     summary: Add a team member
+ *     parameters:
+ *       - in: path
+ *         name: team_secret
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - memberEmail
+ *             properties:
+ *               memberEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: Email of the member to add
+ *     responses:
+ *       200:
+ *         description: Member added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamPopulated'
+ *       400:
+ *         description: Team full, user already in a team, or team is not UNREGISTERED
+ *       404:
+ *         description: Team or member not found
+ */
+teamsRouter.post("/:team_secret/members", addTeamTeamMembers);
+
+/**
+ * @openapi
+ * /api/teams/{team_secret}/members/{member_email}:
+ *   delete:
+ *     tags:
+ *       - Teams
+ *     summary: Remove a team member
+ *     parameters:
+ *       - in: path
+ *         name: team_secret
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: member_email
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Google Email of the member to remove
+ *     responses:
+ *       200:
+ *         description: Member removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamPopulated'
+ *       400:
+ *         description: Member not in team or team is not UNREGISTERED
+ *       404:
+ *         description: Team or member not found
+ */
+teamsRouter.delete(
+  "/:team_secret/members/:member_email",
+  deleteTeamTeamMembers,
+);
