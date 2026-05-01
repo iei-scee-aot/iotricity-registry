@@ -1,23 +1,11 @@
 @import "tailwindcss";
 
-@theme {
-    --color-text-main: #221a14;
-    --color-text-muted: #6f6257;
-    --color-surface: #fff8f1;
-    --color-border-main: rgba(104, 86, 71, 0.18);
-    --color-accent: #e0762f;
-    --color-accent-strong: #a54c1f;
-    --color-accent-soft: rgba(224, 118, 47, 0.12);
-    --color-teal: #4aa9a0;
-    --color-error: #b53d2e;
-}
-
 :root {
     font-family: "Sora", "Avenir Next", "Segoe UI", sans-serif;
     line-height: 1.5;
     font-weight: 400;
-    color: var(--color-text-main);
-    background: linear-gradient(180deg, #f9f3eb 0%, #f6e5d7 44%, #f5efe7 100%);
+    color: white;
+    background: black;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -36,6 +24,7 @@ body {
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
+    background-color: black;
 }
 
 button,
@@ -57,7 +46,7 @@ a {
 code {
     padding: 0.16rem 0.4rem;
     border-radius: 0.55rem;
-    background: rgba(103, 85, 70, 0.08);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 #root {

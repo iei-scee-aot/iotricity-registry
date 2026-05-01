@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authClient } from "./lib/auth-client";
+import FaultyTerminal from "./components/backgrounds/faulty-terminal";
 
 const getInitials = (name: string) => {
   const parts = name
@@ -55,141 +56,161 @@ function App() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden grid place-items-center py-8 px-5">
-      <div
-        className="absolute inset-auto rounded-full blur-[10px] opacity-90 pointer-events-none w-[34rem] h-[34rem] top-[-10rem] right-[-10rem] bg-[radial-gradient(circle,rgba(233,125,49,0.28),transparent_68%)]"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-auto rounded-full blur-[10px] opacity-90 pointer-events-none w-[28rem] h-[28rem] bottom-[-9rem] left-[-8rem] bg-[radial-gradient(circle,rgba(74,169,160,0.26),transparent_70%)]"
-        aria-hidden="true"
-      />
+    <div className="flex flex-col lg:flex-row min-h-screen w-full bg-black">
+      <div className="lg:w-2/3 w-full h-screen relative">
+        <FaultyTerminal
+          scale={1.5}
+          gridMul={[2, 1]}
+          digitSize={1.2}
+          timeScale={0.3}
+          pause={false}
+          scanlineIntensity={0.5}
+          glitchAmount={1}
+          flickerAmount={1}
+          noiseAmp={1}
+          chromaticAberration={0}
+          dither={0}
+          curvature={0.1}
+          tint="#9505F7"
+          mouseReact={false}
+          mouseStrength={0.5}
+          pageLoadAnimation
+          brightness={0.6}
+        />
+      </div>
 
-      <section className="relative z-10 w-[min(100%,38rem)] p-6 sm:p-8 border border-border-main rounded-3xl sm:rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,241,234,0.93)),var(--color-surface)] shadow-[0_32px_80px_rgba(47,36,28,0.15)] backdrop-blur-[18px]">
-        <div className="inline-flex py-2 px-3 rounded-full text-[0.8rem] font-bold tracking-[0.08em] uppercase text-accent-strong bg-accent-soft">
-          Iotricity Registry
-        </div>
-        <h1 className="my-[18px] mb-[12px] text-[clamp(2.4rem,6vw,3.3rem)] leading-[0.95] tracking-[-0.05em]">
-          Google sign-in for your MERN app
-        </h1>
-        <p className="m-0 mb-7 max-w-[34rem] text-text-muted text-base leading-[1.7]">
-          Better Auth is mounted on the Express API and this Vite app reads the
-          session through secure cookie-based auth.
-        </p>
-
-        {session.isPending ? (
-          <div className="flex items-center gap-3 p-[22px] border border-[rgba(92,80,69,0.12)] rounded-[22px] bg-[rgba(255,255,255,0.7)]">
-            <span
-              className="w-3 h-3 rounded-full bg-accent shadow-[0_0_0_8px_rgba(224,118,47,0.15)] animate-pulse"
-              aria-hidden="true"
-            />
-            <p className="m-0 text-text-muted">Checking your session…</p>
+      <main className="hidden lg:flex lg:w-1/3 w-full min-h-screen items-center justify-center p-6 sm:p-12 text-white">
+        <div className="w-full max-w-md space-y-6">
+          <div className="flex flex-col space-y-2 text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Welcome back
+            </h1>
+            <p className="text-sm text-zinc-400">
+              Sign in to your Iotricity Registry account
+            </p>
           </div>
-        ) : user ? (
-          <div className="grid gap-5 p-[22px] border border-[rgba(92,80,69,0.12)] rounded-[22px] bg-[rgba(255,255,255,0.7)]">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              {user.image ? (
-                <img
-                  className="w-[72px] h-[72px] rounded-2xl object-cover shadow-[0_12px_30px_rgba(39,28,19,0.12)]"
-                  src={user.image}
-                  alt={user.name}
-                />
-              ) : (
-                <div
-                  className="grid place-items-center text-surface text-[1.35rem] font-bold bg-[linear-gradient(135deg,var(--color-accent),var(--color-teal))] w-[72px] h-[72px] rounded-2xl object-cover shadow-[0_12px_30px_rgba(39,28,19,0.12)]"
-                  aria-hidden="true"
-                >
-                  {getInitials(user.name)}
+
+          <div className="w-full p-6 sm:p-8">
+            {session.isPending ? (
+              <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                <div className="w-8 h-8 border-4 border-zinc-800 border-t-[#9505F7] rounded-full animate-spin" />
+                <p className="text-sm text-zinc-400">Loading your profile...</p>
+              </div>
+            ) : user ? (
+              <div className="space-y-6">
+                <div className="flex flex-col items-center space-y-4">
+                  {user.image ? (
+                    <img
+                      className="w-20 h-20 rounded-full border border-zinc-800 object-cover"
+                      src={user.image}
+                      alt={user.name}
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-900 text-2xl font-semibold text-white border border-zinc-800">
+                      {getInitials(user.name)}
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold text-white">
+                      {user.name}
+                    </h2>
+                    <p className="text-sm text-zinc-400">{user.email}</p>
+                  </div>
                 </div>
-              )}
 
-              <div>
-                <p className="m-0 text-text-muted">Signed in as</p>
-                <h2 className="my-1 text-[1.5rem]">{user.name}</h2>
-                <p className="m-0 text-text-muted">{user.email}</p>
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex flex-col items-center p-3 rounded-lg bg-zinc-900 border border-zinc-800">
+                    <span className="text-zinc-400">Auth Mode</span>
+                    <strong className="font-medium text-white">Cookie</strong>
+                  </div>
+                  <div className="flex flex-col items-center p-3 rounded-lg bg-zinc-900 border border-zinc-800">
+                    <span className="text-zinc-400">Status</span>
+                    <strong className="font-medium text-white">Verified</strong>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
-              <div className="p-4 rounded-[18px] bg-[rgba(243,235,227,0.78)]">
-                <span className="m-0 text-text-muted">Session mode</span>
-                <strong className="block mt-1.5 text-text-main">
-                  Cookie session
-                </strong>
+                <button
+                  type="button"
+                  className="inline-flex w-full items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-white h-10 px-4 py-2"
+                  onClick={handleSignOut}
+                  disabled={isWorking}
+                >
+                  {isWorking ? "Signing out..." : "Sign out"}
+                </button>
               </div>
-              <div className="p-4 rounded-[18px] bg-[rgba(243,235,227,0.78)]">
-                <span className="m-0 text-text-muted">Email verified</span>
-                <strong className="block mt-1.5 text-text-main">
-                  {user.emailVerified ? "Yes" : "No"}
-                </strong>
-              </div>
-            </div>
+            ) : (
+              <div className="space-y-6">
+                <button
+                  type="button"
+                  className="inline-flex w-full items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-8 shadow-sm"
+                  onClick={handleGoogleSignIn}
+                  disabled={isWorking}
+                >
+                  {isWorking ? (
+                    <div className="mr-2 h-4 w-4 border-2 border-zinc-600 border-t-[#9505F7] rounded-full animate-spin" />
+                  ) : (
+                    <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"
+                      />
+                    </svg>
+                  )}
+                  {isWorking ? "Redirecting..." : "Continue with Google"}
+                </button>
 
-            <button
-              type="button"
-              className="border-0 rounded-[18px] py-4 px-5 font-bold text-text-main bg-[linear-gradient(135deg,rgba(233,125,49,0.16),rgba(74,169,160,0.22))] cursor-pointer transition-all duration-160 ease-out hover:-translate-y-[1px] disabled:cursor-wait disabled:opacity-75"
-              onClick={handleSignOut}
-              disabled={isWorking}
-            >
-              {isWorking ? "Signing out…" : "Sign out"}
-            </button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-zinc-800" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-black px-2 text-zinc-500">
+                      Secure Authentication
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-center text-sm text-zinc-400">
+                  By clicking continue, you agree to our{" "}
+                  <a
+                    href="#"
+                    className="underline underline-offset-4 hover:text-white"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="#"
+                    className="underline underline-offset-4 hover:text-white"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="grid gap-5 p-[22px] border border-[rgba(92,80,69,0.12)] rounded-[22px] bg-[rgba(255,255,255,0.7)]">
-            <div className="grid gap-[14px]">
-              <div className="p-4 rounded-[18px] bg-[rgba(243,235,227,0.78)]">
-                <span className="block mb-2 text-accent-strong text-[0.82rem] font-bold tracking-[0.08em] uppercase">
-                  OAuth
-                </span>
-                <p className="m-0 text-text-muted">
-                  Google sign-in returns here after the Better Auth callback
-                  completes.
-                </p>
-              </div>
-              <div className="p-4 rounded-[18px] bg-[rgba(243,235,227,0.78)]">
-                <span className="block mb-2 text-accent-strong text-[0.82rem] font-bold tracking-[0.08em] uppercase">
-                  API
-                </span>
-                <p className="m-0 text-text-muted">
-                  Auth endpoints live at{" "}
-                  <code className="text-[0.95em] text-accent-strong">
-                    /api/auth/*
-                  </code>{" "}
-                  on the Express server.
-                </p>
-              </div>
+
+          {(actionError || session.error) && (
+            <div className="p-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md">
+              {actionError || session.error?.message}
             </div>
-
-            <button
-              type="button"
-              className="border-0 rounded-[18px] py-4 px-5 font-bold text-[#fffaf4] bg-[linear-gradient(135deg,var(--color-accent),#d84e33)] shadow-[0_16px_30px_rgba(216,78,51,0.24)] cursor-pointer transition-all duration-160 ease-out hover:-translate-y-[1px] hover:shadow-[0_20px_36px_rgba(216,78,51,0.3)] disabled:cursor-wait disabled:opacity-75"
-              onClick={handleGoogleSignIn}
-              disabled={isWorking}
-            >
-              {isWorking ? "Redirecting…" : "Continue with Google"}
-            </button>
-          </div>
-        )}
-
-        {actionError ? (
-          <p className="mt-[18px] mb-0 text-error font-semibold">
-            {actionError}
-          </p>
-        ) : null}
-        {!actionError && session.error ? (
-          <p className="mt-[18px] mb-0 text-error font-semibold">
-            {session.error.message}
-          </p>
-        ) : null}
-
-        <footer className="mt-[18px] mb-0 text-[0.92rem] text-text-muted">
-          Client origin:{" "}
-          <code className="text-[0.95em] text-accent-strong">
-            {window.location.origin}
-          </code>
-        </footer>
-      </section>
-    </main>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
 
