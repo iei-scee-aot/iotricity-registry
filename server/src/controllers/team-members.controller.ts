@@ -78,6 +78,20 @@ export const updateTeamMemberByEmail = async (req: Request, res: Response) => {
     const { email } = req.params;
     const { googleEmail, collegeEmail, rollNumber } = req.body;
 
+    // Validate college email domain if provided
+    if (collegeEmail && !collegeEmail.endsWith("@aot.edu.in")) {
+      return res
+        .status(400)
+        .json({ message: "College email must end with @aot.edu.in" });
+    }
+
+    // Validate roll number prefix if provided
+    if (rollNumber && !rollNumber.startsWith("169")) {
+      return res
+        .status(400)
+        .json({ message: "Roll number must start with 169" });
+    }
+
     // 1. Find the member to be updated
     const teamMemberToUpdate = await TeamMember.findOne({
       $or: [{ googleEmail: email }, { collegeEmail: email }],

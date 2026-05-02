@@ -26,9 +26,31 @@ const teamMemberSchema = new Schema<ITeamMember>(
     googleEmail: { type: String, required: true, unique: true },
     googleProfilePicture: { type: String, required: true },
     // Academic email for institutional verification
-    collegeEmail: { type: String, required: true, unique: true },
+    collegeEmail: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: function (v: string) {
+          return v.endsWith("@aot.edu.in");
+        },
+        message: (props: any) =>
+          `${props.value} is not a valid college email! It must end with @aot.edu.in`,
+      },
+    },
     // Unique institutional identification number
-    rollNumber: { type: String, required: true, unique: true },
+    rollNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: function (v: string) {
+          return v.startsWith("169");
+        },
+        message: (props: any) =>
+          `${props.value} is not a valid roll number! It must start with 169`,
+      },
+    },
     semester: { type: Number, required: true },
     department: { type: String, required: true },
     phoneNumber: { type: String, required: true },

@@ -33,6 +33,7 @@ export const env = {
   betterAuthUrl: getRequiredEnv("BETTER_AUTH_URL"),
   betterAuthSecret: getRequiredEnv("BETTER_AUTH_SECRET"),
   clientOrigin: getRequiredEnv("CLIENT_ORIGIN"),
+  adminOrigin: getRequiredEnv("ADMIN_ORIGIN"),
   googleClientId: getRequiredEnv("GOOGLE_CLIENT_ID"),
   googleClientSecret: getRequiredEnv("GOOGLE_CLIENT_SECRET"),
   razorpayKeyId: getRequiredEnv("RAZORPAY_KEY_ID"),

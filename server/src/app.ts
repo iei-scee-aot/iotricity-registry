@@ -65,7 +65,7 @@ export const createApp = (authHandler: BetterAuthHandler) => {
 
   app.use(
     cors({
-      origin: env.clientOrigin,
+      origin: [env.clientOrigin, env.adminOrigin],
       credentials: true,
     }),
   );
