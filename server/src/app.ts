@@ -8,6 +8,7 @@ import { teamMemberRouter } from "./routes/team-members.routes.js";
 import { teamsRouter } from "./routes/teams.routes.js";
 import { projectsRouter } from "./routes/projects.routes.js";
 import { paymentRouter } from "./routes/payments.routes.js";
+import { adminAuthRouter } from "./routes/admin-auth.routes.js";
 import { swaggerSpec } from "./swagger.js";
 import { connectToDatabase } from "./config/db.js";
 import { connectToAuthDatabase } from "./config/auth-db.js";
@@ -45,6 +46,7 @@ const registerRoutes = (
   });
 
   // API Route registrations
+  app.use("/api/admin/auth", adminAuthRouter);
   app.use("/api/health", healthRouter);
   app.use("/api/team-members", teamMemberRouter);
   app.use("/api/teams", teamsRouter);

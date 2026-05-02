@@ -35,6 +35,10 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Team not found." });
     }
 
+    if (team.registrationStatus === "PAID" || team.registrationStatus === "VERIFIED") {
+      return res.status(400).json({ message: "Team has already paid or is already verified." });
+    }
+
     // Number of additional members (excluding leader)
     const additionalMembersCount = team.teamMembers.length;
 
@@ -63,10 +67,12 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
     await team.save();
 
     res.json({
-      orderId: order.id,
+      id: order.id,
       amount: order.amount,
       currency: order.currency,
       keyId: env.razorpayKeyId,
+      baseAmount: baseAmount,
+      totalAmount: totalAmount,
       method: "upi",
       config: {
         display: {
@@ -89,7 +95,18 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
  */
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bypass } = req.body;
+
+    // Development bypass to allow testing without valid Razorpay keys
+    if (bypass === true && process.env.NODE_ENV !== "production") {
+      const updatedTeam = await Team.findOneAndUpdate(
+        { razorpayOrderId: razorpay_order_id },
+        { registrationStatus: "PAID" },
+        { new: true },
+      );
+      if (!updatedTeam) return res.status(404).json({ message: "Team not found." });
+      return res.json({ message: "Bypassed verification (Dev Only)", registrationStatus: "PAID" });
+    }
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ message: "Missing payment verification details." });

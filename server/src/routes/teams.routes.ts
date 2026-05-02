@@ -8,9 +8,35 @@ import {
   addTeamTeamMembers,
   deleteTeamTeamMembers,
   deleteTeam,
+  getTeamByMemberEmail,
 } from "../controllers/teams.controller.js";
 
 export const teamsRouter = Router();
+
+/**
+ * @openapi
+ * /api/teams/member/{email}:
+ *   get:
+ *     tags:
+ *       - Teams
+ *     summary: Get a team by a member's email
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Team found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamPopulated'
+ *       404:
+ *         description: Team not found for this member
+ */
+teamsRouter.get("/member/:email", getTeamByMemberEmail);
 
 /**
  * @openapi

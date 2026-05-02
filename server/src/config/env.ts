@@ -38,4 +38,6 @@ export const env = {
   googleClientSecret: getRequiredEnv("GOOGLE_CLIENT_SECRET"),
   razorpayKeyId: getRequiredEnv("RAZORPAY_KEY_ID"),
   razorpayKeySecret: getRequiredEnv("RAZORPAY_KEY_SECRET"),
+  adminUsername: getRequiredEnv("ADMIN_USERNAME"),
+  adminPassword: getRequiredEnv("ADMIN_PASSWORD"),
 };

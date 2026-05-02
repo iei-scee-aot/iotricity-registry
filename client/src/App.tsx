@@ -1,84 +1,81 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useRegistration } from "./hooks/use-registration";
-import LoginPage from "./pages/Login";
-import OnboardingPage from "./pages/Onboarding";
-import HomePage from "./pages/Home";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/Layout";
+import LandingPage from "./pages/LandingPage";
+import OnboardingPage from "./pages/OnboardingPage";
+import TeamPage from "./pages/TeamPage";
+import PaymentPage from "./pages/PaymentPage";
+import DashboardPage from "./pages/DashboardPage";
+import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
+import { useSession } from "./lib/auth-client";
+import { Loader2 } from "lucide-react";
 
-/**
- * Main Application Component.
- * Handles the global routing and authentication flow:
- * 1. Login: If not logged in, force /login.
- * 2. Onboarding: If logged in but not in TeamMembers DB, force /onboarding.
- * 3. Home: If logged in and registered, allow /.
- */
-function App() {
-  const { isRegistered, isLoading } = useRegistration();
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { data: session, isPending } = useSession();
 
-  // Show a global loading spinner while session and registration status are being checked
-  if (isLoading) {
+  if (isPending) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-zinc-800 border-t-[#9505F7] rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
       </div>
     );
   }
 
+  if (!session) {
+    return <Navigate to="/" />;
+  }
+
+  return <>{children}</>;
+}
+
+function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/**
-         * Onboarding Route:
-         * Accessible only to logged-in users who haven't completed their profile.
-         */}
-        <Route
-          path="/onboarding"
-          element={
-            isRegistered === false ? (
-              <OnboardingPage />
-            ) : isRegistered === true ? (
-              <Navigate to="/" replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-
-        {/**
-         * Login Route:
-         * Accessible only to non-authenticated users.
-         */}
-        <Route
-          path="/login"
-          element={
-            isRegistered === null ? (
-              <LoginPage />
-            ) : (
-              <Navigate to={isRegistered ? "/" : "/onboarding"} replace />
-            )
-          }
-        />
-
-        {/**
-         * Home Route (Protected):
-         * Requires both authentication and registration.
-         */}
-        <Route
-          path="/"
-          element={
-            isRegistered === true ? (
-              <HomePage />
-            ) : isRegistered === false ? (
-              <Navigate to="/onboarding" replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-
-        {/* Catch-all redirect to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <OnboardingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/team"
+            element={
+              <ProtectedRoute>
+                <TeamPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/submit-project"
+            element={
+              <ProtectedRoute>
+                <ProjectSubmissionPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Layout>
+    </Router>
   );
 }
 

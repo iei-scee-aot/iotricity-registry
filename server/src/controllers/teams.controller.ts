@@ -348,3 +348,41 @@ export const deleteTeam = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+/**
+ * Retrieves a team by a member's email.
+ *
+ * @param req - Express Request object containing email in params.
+ * @param res - Express Response object.
+ */
+export const getTeamByMemberEmail = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+
+    // Find the member by email
+    const member = await TeamMember.findOne({
+      $or: [{ googleEmail: email }, { collegeEmail: email }],
+    });
+
+    if (!member) {
+      return res.status(404).json({ message: "Member not found." });
+    }
+
+    // Find the team where this member is either the leader or a member
+    const team = await Team.findOne({
+      $or: [{ teamLeader: member._id }, { teamMembers: member._id }],
+    })
+      .populate("teamLeader")
+      .populate("teamMembers");
+
+    if (!team) {
+      return res
+        .status(404)
+        .json({ message: "Team not found for this member." });
+    }
+
+    res.json(team);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
